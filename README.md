@@ -28,7 +28,7 @@ cd trap-failure
 git checkout examples
 ```
 
-Run the `example_usage.sh` script via Bash...
+Run the [`example_usage.sh`][branch__master__failure] script via Bash...
 
 
 ```bash
@@ -61,6 +61,49 @@ last_command: "${__DIR__}/nothing.sh"
 > Note, the `failure` function outputs to the second Linux file descriptor (`2` AKA `stderr`), so the usual logging or silencing of error messages, eg. _`example_usage.sh 2>/dev/null`_, should work as expected.
 
 
+The key takeaways from the above script are...
+
+
+```bash
+set -E -o functrace
+source "${__DIR__}/modules/trap-failure/failure.sh"
+trap 'failure "LINENO" "BASH_LINENO" "${BASH_COMMAND}" "${?}"' ERR
+```
+
+
+- The `set` line allows for one more layer of tracing what tripped the trap within the line number list
+
+- The `source` line _pulls_ the `failure` function into the same scope as the example usage script
+
+- The `trap` line passes references to
+
+
+... of which the `failure` function...
+
+
+```
+---
+lines_history: [42 42 53 0]
+function_trace: [failure something_functional main]
+exit_code: 127
+source_trace:
+  - ~/bash-utilities/trap-failure/failure.sh
+  - example_usage.sh
+  - example_usage.sh
+last_command: "${__DIR__}/nothing.sh"
+---
+```
+
+
+... exposed that on line `53` of the _`main`_ script (`example_usage.sh` in this case), when _`something_functional`_ got to line `42` an error occurred attempting to run _`${__DIR__}/nothing.sh`_, which intentionally does not exist for demonstration purposes.
+
+
+> `0` from the `lines_history` array is a reference to the terminal and usually can be ignored.
+>
+> `42` and `failure` pare may be ignored in most cases too, and future revisions this may be _pruned_ this from output.
+
+
+
 ## License
 
 
@@ -84,3 +127,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 [master_branch]: https://github.com/bash-utilities/trap-failure
+[branch__master__failure]: https://github.com/bash-utilities/trap-failure/blob/master/failure.sh
