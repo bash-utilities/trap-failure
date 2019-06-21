@@ -12,10 +12,10 @@ Outputs Front-Mater formatted failures for Bash functions not returning `0` exit
 
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Example Usage](#example-usage)
 - [Support](#support)
 - [License](#license)
 
+> See the [`example`][branch__example] Git `branch` for usage examples.
 
 ------
 
@@ -123,113 +123,6 @@ git config -f .gitmodules submodule.${_destination}.update 'merge,remote'
 ... which'll also ensure those cloning your project are working from the latest revision of this project.
 
 
-## Example Usage
-
-
-```bash
-#!/usr/bin/env bash
-
-
-set -E -o functrace
-
-## Optional, but recommended to find true directory this script resides in
-# __SOURCE__="${BASH_SOURCE[0]}"
-# while [[ -h "${__SOURCE__}" ]]; do
-#     __SOURCE__="$(find "${__SOURCE__}" -type l -ls | sed -n 's@^.* -> \(.*\)@\1@p')"
-# done
-# __DIR__="$(cd -P "$(dirname "${__SOURCE__}")" && pwd)"
-
-
-## Source module code within this script
-source "${__DIR__}/modules/trap-failure/failure.sh"
-
-trap 'failure "LINENO" "BASH_LINENO" "${BASH_COMMAND}" "${?}"' ERR
-
-
-something_functional() {
-    _req_arg_one="${1:?something_functional needs two arguments, missing the first already}"
-    _opt_arg_one="${2:-SPAM}"
-    printf 'something_functional: %s %s %s' "${_req_arg_one}" "${_opt_arg_one}"
-    ## Generate an error by calling nothing
-    "${__DIR__}/nothing.sh"
-}
-
-
-something_functional 'spam' 'ham' || echo "Ignored something_functional returning $?"
-
-if [[ "$(something_functional 'spam')" == '0' ]]; then
-    printf 'Nothing somehow was something?!\n' >&2 && exit 1
-fi
-
-echo "### Testing Failure Trap ###"
-something_functional 'spam'
-```
-
-The key takeaways from the above script are...
-
-
-```bash
-set -E -o functrace
-source "${__DIR__}/modules/trap-failure/failure.sh"
-trap 'failure "LINENO" "BASH_LINENO" "${BASH_COMMAND}" "${?}"' ERR
-```
-
-
-- The `set` line allows for one more layer of tracing what tripped the trap within the line number list
-
-- The `source` line _pulls_ the `failure` function into the same scope as the example usage script
-
-- The `trap` line passes references to
-
-
-The above script should output something similar to...
-
-
-```bash
-something_functional: spam ham example_usage.sh: line 25: ~/bash-utilities/trap-failure/nothing.sh: No such file or directory
-Ignored something_functional returning 127
-example_usage.sh: line 25: ~/bash-utilities/trap-failure/nothing.sh: No such file or directory
-### Testing Failure Trap ###
-something_functional: spam SPAM example_usage.sh: line 25: ~/bash-utilities/trap-failure/nothing.sh: No such file or directory
----
-lines_history: [42 25 36 0]
-function_trace: [failure something_functional main]
-exit_code: 127
-source_trace:
-  - ~/bash-utilities/trap-failure/failure.sh
-
-  - example_usage.sh
-  - example_usage.sh
-last_command: "${__DIR__}/nothing.sh"
----
-```
-
-
-... of which the `failure` function...
-
-
-```
----
-lines_history: [42 25 36 0]
-function_trace: [failure something_functional main]
-exit_code: 127
-source_trace:
-  - ~/bash-utilities/trap-failure/failure.sh
-  - example_usage.sh
-  - example_usage.sh
-last_command: "${__DIR__}/nothing.sh"
----
-```
-
-
-... exposed that on line `36` of the _`main`_ script (`example_usage.sh` in this case), when _`something_functional`_ got to line `25` an error occurred attempting to run _`${__DIR__}/nothing.sh`_, which intentionally does not exist for demonstration purposes.
-
-
-> `0` from the `lines_history` array is a reference to the terminal and usually can be ignored.
->
-> `42` and `failure` also may be ignored in most cases, and future revisions this may be _pruned_ this from output.
-
-
 ## Support
 
 
@@ -275,6 +168,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 [relative_link__issues]: issues
 [relative_link__members]: network/members
 [source_link__failure]: failure.sh
+
+[branch__example]: https://github.com/bash-utilities/trap-failure/tree/example
 
 
 [badge__issues]: https://img.shields.io/github/issues/bash-utilities/trap-failure.svg
