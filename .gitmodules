@@ -1,0 +1,4 @@
+[submodule "modules/trap-failure"]
+	path = modules/trap-failure
+	url = https://github.com/bash-utilities/trap-failure.git
+	branch = master
