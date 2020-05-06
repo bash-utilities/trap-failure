@@ -27,9 +27,9 @@ failure(){
     local _code="${4:-0}"
 
     ## Workaround for read EOF combo tripping traps
-    if ! ((_code)); then
-        return "${_code}"
-    fi
+    ((_code)) || {
+      return "${_code}"
+    }
 
     local _last_command_height="$(wc -l <<<"${_last_command}")"
 
@@ -41,23 +41,23 @@ failure(){
         "exit_code: ${_code}"
     )
 
-    if [[ "${#BASH_SOURCE[@]}" -gt '1' ]]; then
+    [[ "${#BASH_SOURCE[@]}" -gt '1' ]] && {
         _output_array+=('source_trace:')
         for _item in "${BASH_SOURCE[@]}"; do
             _output_array+=("  - ${_item}")
         done
-    else
+    } || {
         _output_array+=("source_trace: [${BASH_SOURCE[*]}]")
-    fi
+    }
 
-    if [[ "${_last_command_height}" -gt '1' ]]; then
+    [[ "${_last_command_height}" -gt '1' ]] && {
         _output_array+=(
             'last_command: ->'
             "${_last_command}"
         )
-    else
+    } || {
         _output_array+=("last_command: ${_last_command}")
-    fi
+    }
 
     _output_array+=('---')
     printf '%s\n' "${_output_array[@]}" >&2
