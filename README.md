@@ -22,7 +22,7 @@ Outputs Front-Mater formatted failures for Bash functions not returning `0` exit
 ## Requirements
 
 
-Bash version 4 or greater and the following command line utilities;
+Bash version ~4.3 or greater and the following command line utilities;
 
 
 - `printf` for _returning_ values between functions
